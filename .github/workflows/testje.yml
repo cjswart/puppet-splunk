@@ -1,0 +1,28 @@
+name: splunk
+
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          sudo apt update && sudo apt install -y docker-compose curl
+      - name: Build docker images
+        run: |
+          cd docker
+          sudo docker-compose -f docker-compose.yml up --build -d
+      - name: Run tests
+        run: |
+          curl -X GET http://localhost:8080/api/health && (curl -X GET http://localhost:8080 && echo OK || echo Not OK)
